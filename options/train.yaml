@@ -92,7 +92,7 @@ data:
       params:
         name: FFHQ
         phase: train
-        dataroot_gt: ~
+        dataroot_gt: /home/vilin/BFRffusion/data/images1024x1024
         io_backend:
           type: disk
         use_hflip: true
@@ -148,4 +148,4 @@ lightning:
   trainer:
     benchmark: True
     max_steps: 250000
-    gpus: 0,1,2,3
+    gpus: 0,1

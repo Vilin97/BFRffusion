@@ -8,3 +8,4 @@ data/
 .vscode/
 weights/
 __pycache__/
+experiments/
