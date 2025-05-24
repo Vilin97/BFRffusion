@@ -4,6 +4,7 @@ import numpy as np
 import os.path as osp
 import torch
 import torch.utils.data as data
+import glob
 from basicsr.data import degradations as degradations
 from basicsr.data.data_util import paths_from_folder
 from basicsr.data.transforms import augment
@@ -56,7 +57,9 @@ class FFHQDegradationDataset(data.Dataset):
                 self.paths = [line.split('.')[0] for line in fin]
         else:
             # disk backend: scan file list from a folder
-            self.paths = paths_from_folder(self.gt_folder)
+            # self.paths = paths_from_folder(self.gt_folder)
+            self.paths = glob.glob(os.path.join(self.gt_folder, '**', '*.png'), recursive=True)
+
 
         # degradation configurations
         self.blur_kernel_size = opt['blur_kernel_size']
