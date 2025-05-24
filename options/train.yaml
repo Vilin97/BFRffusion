@@ -84,21 +84,21 @@ model:
 data:
   target: data.dataset_instantiate.DataModuleFromConfig
   params:
-    batch_size: 16
-    num_workers: 16
+    batch_size: 6
+    num_workers: 10
     wrap: false
     train:
       target: data.ffhq_degradation_dataset.FFHQDegradationDataset
       params:
         name: FFHQ
         phase: train
-        dataroot_gt: /home/vilin/BFRffusion/data/images1024x1024
+        dataroot_gt: /gscratch/amath/vilin/BFRffusion/data/images1024x1024
         io_backend:
           type: disk
         use_hflip: true
         mean: [0.5, 0.5, 0.5]
         std: [0.5, 0.5, 0.5]
-        out_size: 512
+        out_size: 256 # reduced from 512 to 256 to fit in memory
         blur_kernel_size: 41
         kernel_list: ['iso', 'aniso']
         kernel_prob: [0.5, 0.5]
@@ -146,6 +146,7 @@ lightning:
         scale: 1
 
   trainer:
+    precision: 16 # added this line to reduce memory usage (43gb -> 35gb)
     benchmark: True
     max_steps: 250000
-    gpus: 0,1
+    gpus: 2

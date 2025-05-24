@@ -5,8 +5,16 @@
 *.pyc
 *.txt
 *.json
+*.lock
+
 ldm/
 .vscode/
 weights/
 __pycache__/
 experiments/
+data/cache/
+
+# Ignore Python bytecode
+*.pyc
+*.pyo
+*.pyd
