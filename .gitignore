@@ -3,8 +3,9 @@
 *.jpeg
 *.ckpt
 *.pyc
+*.txt
+*.json
 ldm/
-data/
 .vscode/
 weights/
 __pycache__/
