@@ -1,0 +1,10 @@
+*.png
+*.jpg
+*.jpeg
+*.ckpt
+*.pyc
+ldm/
+data/
+.vscode/
+weights/
+__pycache__/

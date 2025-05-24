@@ -1,7 +1,7 @@
 model:
   target: models.models.BFRffusion
   base_learning_rate: 1e-4
-  checkpoint_path: experiments/weights/v2-1_512-ema-pruned.ckpt
+  checkpoint_path: experiments/weights/checkpoint_BFRffusion_FFHQ.ckpt
   params:
     linear_start: 0.00085
     linear_end: 0.0120
