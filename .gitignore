@@ -13,6 +13,7 @@ weights/
 __pycache__/
 experiments/
 data/cache/
+cache/
 
 # Ignore Python bytecode
 *.pyc
