@@ -9,13 +9,14 @@ import os
 import matplotlib.pyplot as plt
 from tqdm import trange, tqdm
 import os
+import shutil
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 #%%
-model_id = "peter-sushko/RealEdit"
-pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(model_id, torch_dtype=torch.float16, safety_checker=None, cache_dir = 'cache')
-pipe.to('cuda')
-pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+# model_id = "peter-sushko/RealEdit"
+# pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(model_id, torch_dtype=torch.float16, safety_checker=None, cache_dir = 'cache')
+# pipe.to('cuda')
+# pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 
 #%%
 def encode(pipe, image):
@@ -43,39 +44,63 @@ def decode(pipe, latent):
     return image_pil
 
 #%%
-"Degrade images with the VAE"
+# "Degrade images with the VAE"
 
-output_dir_gt = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/gt"
-output_dir_lq = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/lq"
-os.makedirs(output_dir_gt, exist_ok=True)
-os.makedirs(output_dir_lq, exist_ok=True)
+# output_dir_gt = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/gt"
+# output_dir_lq = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/lq"
+# os.makedirs(output_dir_gt, exist_ok=True)
+# os.makedirs(output_dir_lq, exist_ok=True)
 
-prefixes = [f"{i:02d}" for i in range(60, 70)]
-for prefix in prefixes:
-    print(f"Processing prefix: {prefix}")
-    image_path = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images1024x1024/{prefix}000"
-    image_files = [f for f in os.listdir(image_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+# prefixes = [f"{i:02d}" for i in range(60, 70)]
+# for prefix in prefixes:
+#     print(f"Processing prefix: {prefix}")
+#     image_path = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images1024x1024/{prefix}000"
+#     image_files = [f for f in os.listdir(image_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    for i in trange(1000):
-        try:
-            img = Image.open(os.path.join(image_path, image_files[i])).convert("RGB")
+#     for i in trange(1000):
+#         try:
+#             img = Image.open(os.path.join(image_path, image_files[i])).convert("RGB")
 
-            size = 512
-            img_resized = ImageOps.pad(img, (size, size), method=Image.LANCZOS, color=(0, 0, 0))
+#             size = 512
+#             img_resized = ImageOps.pad(img, (size, size), method=Image.LANCZOS, color=(0, 0, 0))
 
-            # Encode and decode
-            latent = encode(pipe, img_resized)
-            decoded_img = decode(pipe, latent)
+#             # Encode and decode
+#             latent = encode(pipe, img_resized)
+#             decoded_img = decode(pipe, latent)
 
-            # Save images
-            img_resized.save(os.path.join(output_dir_gt, f"{os.path.splitext(image_files[i])[0]}.png"))
-            decoded_img.save(os.path.join(output_dir_lq, f"{os.path.splitext(image_files[i])[0]}.png"))
-        except Exception as e:
-            print(f"Error processing image {image_files[i]}: {e}")
-            continue
+#             # Save images
+#             img_resized.save(os.path.join(output_dir_gt, f"{os.path.splitext(image_files[i])[0]}.png"))
+#             decoded_img.save(os.path.join(output_dir_lq, f"{os.path.splitext(image_files[i])[0]}.png"))
+#         except Exception as e:
+#             print(f"Error processing image {image_files[i]}: {e}")
+#             continue
 
 
+#%%
+"make the validation set"
 
+val_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/gt"
+val_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/lq"
+train_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/gt"
+train_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/lq"
+
+os.makedirs(val_gt_dir, exist_ok=True)
+os.makedirs(val_lq_dir, exist_ok=True)
+os.makedirs(train_gt_dir, exist_ok=True)
+os.makedirs(train_lq_dir, exist_ok=True)
+
+for subdir in ["gt", "lq"]:    
+    src_dir = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/{subdir}"
+    files = [fname for fname in os.listdir(src_dir) if fname.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    for fname in tqdm(files, desc=f"Copying {subdir} images"):
+        prefix = fname[:1]
+        if prefix == "6":
+            dst_dir = val_gt_dir if subdir == "gt" else val_lq_dir
+        else:
+            dst_dir = train_gt_dir if subdir == "gt" else train_lq_dir
+        src_path = os.path.join(src_dir, fname)
+        dst_path = os.path.join(dst_dir, fname)
+        shutil.copy(src_path, dst_path)
 
 #%%
 # "Make edits"
