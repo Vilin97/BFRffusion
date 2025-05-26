@@ -79,6 +79,20 @@ class BFRffusion(LatentDiffusion):
         self.CosineAnnealing_steps = CosineAnnealing_steps
         self.top5_psnr_dict = {}
 
+    def training_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch)
+        # Log all entries in loss_dict to TensorBoard
+        for k, v in loss_dict.items():
+            self.log(k, v, on_step=True, on_epoch=True, prog_bar=(k.endswith('/loss')))
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        self.eval()
+        with torch.no_grad():
+            loss, loss_dict = self.shared_step(batch)
+            for k, v in loss_dict.items():
+                self.log(k.replace("train/", "val/"), v, on_step=False, on_epoch=True, prog_bar=(k.endswith('/loss')))
+        return loss
 
     @torch.no_grad()
     def get_input(self, batch, k, bs=None, *args, **kwargs):
@@ -135,7 +149,6 @@ class BFRffusion(LatentDiffusion):
         n_row = min(z.shape[0], n_row)
         log["reconstruction"] = self.decode_first_stage(z)
         log["control"] = c_cat * 2.0 - 1.0
-        log["conditioning"] = log_txt_as_img((512, 512), batch[self.cond_stage_key], size=16)
 
         if plot_diffusion_rows:
             # get diffusion row
@@ -212,22 +225,22 @@ class BFRffusion(LatentDiffusion):
             writer = SummaryWriter(os.path.join(os.path.dirname(save_dir),'tensorboard','version_0'))
             with open(f'{save_dir}/metrics.txt','a') as f:
                 f.write(f'----------{filename}----------\n')
-                if metrics.psnr_ssim:
+                if getattr(metrics, 'psnr_ssim', False):
                     psnr,ssim = calculate_psnr_ssim(config.params.dataroot_gt, save_dir_img)
                     f.write(f'psnr={psnr},ssim={ssim}\n')
                     writer.add_scalar("metrics/psnr", psnr, self.global_step)
                     writer.add_scalar("metrics/ssim", ssim, self.global_step)
-                if metrics.lpips:
+                if getattr(metrics, 'lpips', False):
                     lpips = calculate_lpips(config.params.dataroot_gt, save_dir_img)
                     f.write(f'lpips={lpips}\n')
                     writer.add_scalar("metrics/lpips",lpips, self.global_step)
-                if metrics.niqe:
+                if getattr(metrics, 'niqe', False):
                     niqe = calculate_NIQE(save_dir_img)
                     f.write(f'niqe={niqe}\n')
                     writer.add_scalar("metrics/niqe",niqe, self.global_step)
-                if metrics.fid:
+                if getattr(metrics, 'fid', False):
                     fid = calculate_fid_folder(save_dir_img)
-                    f.write(f'niqe={fid}\n')
+                    f.write(f'fid={fid}\n')
                     writer.add_scalar("metrics/fid",fid, self.global_step)
 
                 
