@@ -1,16 +1,13 @@
 #%%
 from PIL import Image, ImageOps
 import torch
-# from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
-# from types import MethodType
+from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
 import numpy as np
 import os
-# from tqdm import tqdm
 import matplotlib.pyplot as plt
 from tqdm import trange, tqdm
 import os
 import shutil
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 #%%
 model_id = "peter-sushko/RealEdit"
@@ -44,17 +41,33 @@ def decode(pipe, latent):
     return image_pil
 
 #%%
+"Degrade a single image with the VAE"
+
+path = "images512x512/train_pico/"
+img = Image.open(path + "gt/vas.png").convert("RGB")
+size=512
+img = ImageOps.pad(img, (size, size), method=Image.LANCZOS, color=(0, 0, 0))
+display(img)
+
+latent = encode(pipe, img)
+decoded_img = decode(pipe, latent)
+
+display(decoded_img)
+img.save(path + "gt/vas.png")
+decoded_img.save(path + "lq/vas.png")
+
+#%%
 "Degrade images with the VAE"
 
-# output_dir_gt = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/gt"
-# output_dir_lq = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/lq"
+# output_dir_gt = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/gt"
+# output_dir_lq = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/lq"
 # os.makedirs(output_dir_gt, exist_ok=True)
 # os.makedirs(output_dir_lq, exist_ok=True)
 
 # prefixes = [f"{i:02d}" for i in range(60, 70)]
 # for prefix in prefixes:
 #     print(f"Processing prefix: {prefix}")
-#     image_path = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images1024x1024/{prefix}000"
+#     image_path = f"/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images1024x1024/{prefix}000"
 #     image_files = [f for f in os.listdir(image_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
 #     for i in trange(1000):
@@ -79,10 +92,10 @@ def decode(pipe, latent):
 #%%
 # "make the validation set"
 
-# val_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/gt"
-# val_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/lq"
-# train_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/gt"
-# train_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/lq"
+# val_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val/gt"
+# val_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val/lq"
+# train_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train/gt"
+# train_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train/lq"
 
 # os.makedirs(val_gt_dir, exist_ok=True)
 # os.makedirs(val_lq_dir, exist_ok=True)
@@ -90,7 +103,7 @@ def decode(pipe, latent):
 # os.makedirs(train_lq_dir, exist_ok=True)
 
 # for subdir in ["gt", "lq"]:    
-#     src_dir = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/{subdir}"
+#     src_dir = f"/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/{subdir}"
 #     files = [fname for fname in os.listdir(src_dir) if fname.lower().endswith(('.png', '.jpg', '.jpeg'))]
 #     for fname in tqdm(files, desc=f"Copying {subdir} images"):
 #         prefix = fname[:1]
@@ -127,10 +140,10 @@ def decode(pipe, latent):
 #%%
 # # Make a nano validation set with 10 images
 
-# val_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/gt"
-# val_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val/lq"
-# val_nano_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val_nano/gt"
-# val_nano_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/val_nano/lq"
+# val_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val/gt"
+# val_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val/lq"
+# val_nano_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val_nano/gt"
+# val_nano_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/val_nano/lq"
 # os.makedirs(val_nano_gt_dir, exist_ok=True)
 # os.makedirs(val_nano_lq_dir, exist_ok=True)
 
@@ -155,10 +168,10 @@ def decode(pipe, latent):
 #%%
 "Make a nano training set with 10 images"
 
-# train_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/gt"
-# train_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train/lq"
-# train_nano_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train_nano/gt"
-# train_nano_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train_nano/lq"
+# train_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train/gt"
+# train_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train/lq"
+# train_nano_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train_nano/gt"
+# train_nano_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train_nano/lq"
 # os.makedirs(train_nano_gt_dir, exist_ok=True)
 # os.makedirs(train_nano_lq_dir, exist_ok=True)
 
@@ -181,9 +194,9 @@ def decode(pipe, latent):
 #     shutil.copy(src_path, dst_path)
 
 #%%
-input_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images512x512/train_nano/gt"
-output_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/gt"
-output_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/lq"
+input_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images512x512/train_nano/gt"
+output_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/train_nano/gt"
+output_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/train_nano/lq"
 os.makedirs(output_gt_dir, exist_ok=True)
 os.makedirs(output_lq_dir, exist_ok=True)
 
@@ -205,7 +218,7 @@ for fname in tqdm(image_files, desc="Processing train_nano images"):
 "Duplicate each file in train_nano/gt and train_nano/lq 20 times with _i suffix"
 
 for subdir in ["gt", "lq"]:
-    dir_path = f"/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/{subdir}"
+    dir_path = f"/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/train_nano/{subdir}"
     files = [f for f in os.listdir(dir_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
     for fname in tqdm(files, desc=f"Duplicating {subdir} images"):
         src_path = os.path.join(dir_path, fname)
@@ -216,13 +229,13 @@ for subdir in ["gt", "lq"]:
             shutil.copy(src_path, dst_path)
 
 #%%
-val_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/val_nano/gt"
-val_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/val_nano/lq"
+val_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/val_nano/gt"
+val_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/val_nano/lq"
 os.makedirs(val_gt_dir, exist_ok=True)
 os.makedirs(val_lq_dir, exist_ok=True)
 
-src_gt_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/gt"
-src_lq_dir = "/mmfs1/gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/lq"
+src_gt_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/train_nano/gt"
+src_lq_dir = "/mmfs1/gscratch/krishna/vilin/BFRffusion/data/images256x256/train_nano/lq"
 
 gt_files = [f for f in os.listdir(src_gt_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg')) and "_" not in f]
 lq_files = [f for f in os.listdir(src_lq_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg')) and "_" not in f]
@@ -234,3 +247,4 @@ for fname in gt_files:
     shutil.copy(os.path.join(src_gt_dir, fname), os.path.join(val_gt_dir, fname))
 for fname in lq_files:
     shutil.copy(os.path.join(src_lq_dir, fname), os.path.join(val_lq_dir, fname))
+

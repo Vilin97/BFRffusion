@@ -1,0 +1,4 @@
+- checkpoints don't get saved
+- restored images in logs all look identical
+- some other weird images get logged ('samples...' and 'control...')
+- loss on one example goes down but inference looks bad on the same example

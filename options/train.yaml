@@ -1,6 +1,6 @@
 model:
   target: models.models.BFRffusion
-  base_learning_rate: 5e-6 # lowered from 1e-4 because we are only finetuning
+  base_learning_rate: 1e-5 # lowered from 1e-4 because we are only finetuning
   checkpoint_path: experiments/weights/checkpoint_BFRffusion_FFHQ.ckpt
   params:
     linear_start: 0.00085
@@ -81,8 +81,8 @@ model:
 data:
   target: data.dataset_instantiate.DataModuleFromConfig
   params:
-    batch_size: 24 # size=6: 20gb VRAM, size=20: 25gb VRAM, size=30: 27.5gb VRAM
-    num_workers: 10
+    batch_size: 1 # size=6: 20gb VRAM, size=20: 25gb VRAM, size=30: 27.5gb VRAM
+    num_workers: 4
     wrap: false
 
     # ---------- TRAIN ----------
@@ -90,14 +90,14 @@ data:
       target: data.paired_image_dataset.PairedImageDataset
       params:
         phase: train
-        dataroot_gt: /gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/gt
-        dataroot_lq: /gscratch/amath/vilin/BFRffusion/data/images256x256/train_nano/lq
+        dataroot_gt: /gscratch/krishna/vilin/BFRffusion/data/images512x512/train_pico/gt
+        dataroot_lq: /gscratch/krishna/vilin/BFRffusion/data/images512x512/train_pico/lq
         io_backend:
           type: disk
-        gt_size: 256      # random 256×256 crops
-        scale: 1
-        use_hflip: true
+        gt_size: -1      # random crops
+        use_hflip: false
         use_rot: false
+        scale: 1
         mean: [0.5, 0.5, 0.5]
         std:  [0.5, 0.5, 0.5]
 
@@ -109,32 +109,32 @@ lightning:
 
   modelcheckpoint:
     verbose: True
-    every_n_train_steps: 5000
+    every_n_train_steps: 1
     save_last: True
     save_weights_only: False
 
   use_image_logger: True
   image_logger:
-    batch_frequency: 250
-    max_images: 4
+    batch_frequency: 10
+    max_images: 1
     clamp: True
 
-  use_val: False
+  use_val: True
   val:
-    val_freq: 250
+    val_freq: 10
     save_img: true
     metrics:
       psnr_ssim: false
       lpips: false
 
     dataset:
-      num_workers: 10
-      batch_size: 5
+      num_workers: 4
+      batch_size: 1
       target: data.paired_image_dataset.PairedImageDataset
       params:
         phase: test
-        dataroot_gt: /gscratch/amath/vilin/BFRffusion/data/images256x256/val_nano/gt
-        dataroot_lq: /gscratch/amath/vilin/BFRffusion/data/images256x256/val_nano/lq
+        dataroot_gt: /gscratch/krishna/vilin/BFRffusion/data/images512x512/train_pico/gt
+        dataroot_lq: /gscratch/krishna/vilin/BFRffusion/data/images512x512/train_pico/lq
         io_backend:
           type: disk
         scale: 1
@@ -142,7 +142,7 @@ lightning:
         std:  [0.5, 0.5, 0.5]
 
   trainer:
-    precision: 16
+    # precision: 16
     benchmark: True
-    max_steps: 2500 # lowered from 250_000 because we are only finetuning
-    gpus: 2
+    max_steps: 200 # lowered from 250_000 because we are only finetuning
+    gpus: 1

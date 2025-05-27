@@ -331,12 +331,13 @@ class EvalHook(Hook):
             best_score = key_score
             runner.meta['hook_msgs']['best_score'] = best_score
 
-            if self.best_ckpt_path and self.file_client.isfile(
-                    self.best_ckpt_path):
-                self.file_client.remove(self.best_ckpt_path)
-                runner.logger.info(
-                    (f'The previous best checkpoint {self.best_ckpt_path} was '
-                     'removed'))
+            print("[DEBUG] Saving best checkpoint (EvalHook)...")
+            # if self.best_ckpt_path and self.file_client.isfile(
+            #         self.best_ckpt_path):
+            #     self.file_client.remove(self.best_ckpt_path)
+            #     runner.logger.info(
+            #         (f'The previous best checkpoint {self.best_ckpt_path} was '
+            #          'removed'))
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
             self.best_ckpt_path = self.file_client.join_path(

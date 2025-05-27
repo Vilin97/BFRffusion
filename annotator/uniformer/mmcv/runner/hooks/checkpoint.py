@@ -118,6 +118,7 @@ class CheckpointHook(Hook):
     @master_only
     def _save_checkpoint(self, runner):
         """Save the current checkpoint and delete unwanted checkpoint."""
+        print("[DEBUG] Saving best checkpoint (CheckpointHook)...")
         runner.save_checkpoint(
             self.out_dir, save_optimizer=self.save_optimizer, **self.args)
         if runner.meta is not None:

@@ -651,6 +651,7 @@ def save_checkpoint(model,
             Default: None.
             `New in version 1.3.16.`
     """
+    print('[DEBUG] saving checkpoint (runner)')
     if meta is None:
         meta = {}
     elif not isinstance(meta, dict):

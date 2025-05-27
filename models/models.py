@@ -139,6 +139,7 @@ class BFRffusion(LatentDiffusion):
                    plot_diffusion_rows=False, unconditional_guidance_scale=9.0, unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
+        print('[DEBUG] Running log_images function (models/models.py:log_images)')
         use_ddim = ddim_steps is not None
 
         log = dict()
@@ -148,7 +149,7 @@ class BFRffusion(LatentDiffusion):
         N = min(z.shape[0], N)
         n_row = min(z.shape[0], n_row)
         log["reconstruction"] = self.decode_first_stage(z)
-        log["control"] = c_cat * 2.0 - 1.0
+        # log["control"] = c_cat * 2.0 - 1.0
 
         if plot_diffusion_rows:
             # get diffusion row
@@ -174,7 +175,7 @@ class BFRffusion(LatentDiffusion):
                                                      batch_size=N, ddim=use_ddim,
                                                      ddim_steps=ddim_steps, eta=ddim_eta)
             x_samples = self.decode_first_stage(samples)
-            log["samples"] = x_samples
+            # log["samples"] = x_samples
             if plot_denoise_rows:
                 denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
                 log["denoise_row"] = denoise_grid
@@ -193,6 +194,7 @@ class BFRffusion(LatentDiffusion):
 
     @torch.no_grad()
     def val(self, save_img, save_dir, metrics, config, ddim_steps=50):
+        print('[DEBUG] Running val function (models/models.py:val)')
         if config.params.dataroot_gt is not None:
             filename = "gs-{:06}_e-{:06}".format(self.global_step, self.current_epoch)
             save_dir_img = os.path.join(save_dir, filename)
@@ -245,7 +247,7 @@ class BFRffusion(LatentDiffusion):
 
                 
             # save top5 PSNR model
-            if psnr is None:
+            if 'psnr' in locals() and psnr is None:
                 if len(self.top5_psnr_dict) < 5:
                     self.top5_psnr_dict[filename] = psnr
                     checkpoint_path = os.path.join(self.logger.save_dir, 'checkpoints', f'checkpoint_{filename}.ckpt')
@@ -266,8 +268,8 @@ class BFRffusion(LatentDiffusion):
                             os.remove(checkpoint_path)
 
                 # delete img if not save_img
-                if not save_img and os.path.exists(save_dir_img):
-                    shutil.rmtree(save_dir_img)
+                # if not save_img and os.path.exists(save_dir_img):
+                #     shutil.rmtree(save_dir_img)
 
 
     @torch.no_grad()

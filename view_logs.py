@@ -3,7 +3,7 @@ from tensorboard.backend.event_processing.event_accumulator import EventAccumula
 import glob
 import os
 
-base_logdir = "/gscratch/amath/vilin/BFRffusion/experiments"
+base_logdir = "/gscratch/krishna/vilin/BFRffusion/experiments"
 logdirs = glob.glob(f"{base_logdir}/*/tensorboard/version_*")
 
 for logdir in logdirs:
